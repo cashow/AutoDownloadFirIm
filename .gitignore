@@ -1,0 +1,15 @@
+*.iml
+.gradle
+.idea
+build/
+/local.properties
+.DS_Store
+/captures
+/.gradletasknamecache
+workspace
+log
+release_apks/
+tools/*.apk
+tools/*.zip
+app/src/test/
+hprof/
