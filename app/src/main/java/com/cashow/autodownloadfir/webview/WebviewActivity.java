@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
@@ -31,6 +32,8 @@ public class WebviewActivity extends AppCompatActivity {
     private Context context;
 
     private String url;
+
+    private boolean isInstall;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +70,11 @@ public class WebviewActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                webview.loadUrl("javascript:FIR.install()");
+
+                if (!isInstall) {
+                    isInstall = true;
+                    install();
+                }
             }
 
             @Override
@@ -105,6 +112,10 @@ public class WebviewActivity extends AppCompatActivity {
             setResult(RESULT_OK, intent);
             finish();
         });
+    }
+
+    private void install() {
+        webview.loadUrl("javascript:FIR.install()");
     }
 
     @Override
