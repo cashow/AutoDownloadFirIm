@@ -28,9 +28,9 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
     CheckBox checkboxAutoDownload;
 
     /**
-     * 目前聚焦的 edittext
+     * 目前聚焦的 view
      */
-    private EditText currentEditText;
+    private View currentInfoView;
 
     private MainPresenter presenter;
 
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
         layoutInfoList.removeAllViews();
         FirInfoList firInfoList = presenter.getSavedInfoList();
         if (firInfoList == null || firInfoList.firInfoList.size() == 0) {
-            layoutInfoList.addView(getFirInfoView(new FirInfo("", true)));
+            layoutInfoList.addView(getFirInfoView(new FirInfo("", true, "")));
         } else {
             for (FirInfo firInfo : firInfoList.firInfoList) {
                 layoutInfoList.addView(getFirInfoView(firInfo));
@@ -83,21 +83,33 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
      */
     private View getFirInfoView(FirInfo firInfo) {
         View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.layout_fir_info, layoutInfoList, false);
-        EditText editText = view.findViewById(R.id.edittext_name);
+        EditText edittextName = view.findViewById(R.id.edittext_name);
+        EditText edittextPassword = view.findViewById(R.id.edittext_password);
         View imageDelete = view.findViewById(R.id.image_delete);
-        editText.setText(firInfo.name);
-        editText.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-        editText.setOnFocusChangeListener((v, hasFocus) -> {
+
+        edittextName.setText(firInfo.name);
+        edittextName.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+        edittextName.setOnFocusChangeListener((v, hasFocus) -> {
             view.setSelected(hasFocus);
             if (hasFocus) {
-                currentEditText = editText;
+                currentInfoView = view;
             }
         });
-        view.setOnClickListener(v -> editText.requestFocus());
+
+        edittextPassword.setText(firInfo.password);
+        edittextPassword.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+        edittextPassword.setOnFocusChangeListener((v, hasFocus) -> {
+            view.setSelected(hasFocus);
+            if (hasFocus) {
+                currentInfoView = view;
+            }
+        });
+
+        view.setOnClickListener(v -> edittextName.requestFocus());
         imageDelete.setOnClickListener(v -> layoutInfoList.removeView(view));
         if (firInfo.isFocused) {
             view.setSelected(true);
-            editText.post(() -> editText.requestFocus());
+            edittextName.post(() -> edittextName.requestFocus());
         }
         return view;
     }
@@ -109,17 +121,20 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
 
     @OnClick(R.id.button_new_link)
     void onNewLinkClick() {
-        FirInfo firInfo = new FirInfo("", true);
+        FirInfo firInfo = new FirInfo("", true, "");
         layoutInfoList.addView(getFirInfoView(firInfo));
     }
 
     private FirInfoList getCurrentInfoList() {
         FirInfoList firInfoList = new FirInfoList();
         for (int i = 0; i < layoutInfoList.getChildCount(); i++) {
-            EditText editText = layoutInfoList.getChildAt(i).findViewById(R.id.edittext_name);
-            String info = editText.getEditableText().toString();
+            View view = layoutInfoList.getChildAt(i);
+            EditText edittextName = view.findViewById(R.id.edittext_name);
+            EditText edittextPassword = view.findViewById(R.id.edittext_password);
+            String info = edittextName.getEditableText().toString();
+            String password = edittextPassword.getEditableText().toString();
             if (!TextUtils.isEmpty(info)) {
-                firInfoList.firInfoList.add(new FirInfo(info, (currentEditText == editText)));
+                firInfoList.firInfoList.add(new FirInfo(info, (currentInfoView == view), password));
             }
         }
         firInfoList.isAutoDownload = checkboxAutoDownload.isChecked();
@@ -130,8 +145,12 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
      * 打开 webview 页面
      */
     private void startWebviewActivity() {
+        EditText editTextName = currentInfoView.findViewById(R.id.edittext_name);
+        EditText editTextPassword = currentInfoView.findViewById(R.id.edittext_password);
+
         Intent intent = new Intent(this, WebviewActivity.class);
-        intent.putExtra("url", "https://fir.im/" + currentEditText.getEditableText().toString());
+        intent.putExtra("url", "https://fir.im/" + editTextName.getEditableText().toString());
+        intent.putExtra("password", editTextPassword.getEditableText().toString());
         startActivityForResult(intent, 0);
     }
 

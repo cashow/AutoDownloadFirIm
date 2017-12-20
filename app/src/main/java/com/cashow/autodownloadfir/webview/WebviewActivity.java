@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.webkit.SslErrorHandler;
@@ -18,6 +20,9 @@ import android.widget.Toast;
 
 import com.cashow.autodownloadfir.R;
 import com.tbruyelle.rxpermissions2.RxPermissions;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,8 +37,9 @@ public class WebviewActivity extends AppCompatActivity {
     private Context context;
 
     private String url;
+    private String password;
 
-    private boolean isInstall;
+    private boolean isFirstTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +50,7 @@ public class WebviewActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         url = getIntent().getStringExtra("url");
+        password = getIntent().getStringExtra("password");
 
         initWebView();
 
@@ -71,9 +78,15 @@ public class WebviewActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
 
-                if (!isInstall) {
-                    isInstall = true;
-                    install();
+                injectScriptFile(view, "my_script.js");
+
+                if (!isFirstTime) {
+                    isFirstTime = true;
+                    if (!TextUtils.isEmpty(password)) {
+                        login();
+                    } else {
+                        install();
+                    }
                 }
             }
 
@@ -112,10 +125,49 @@ public class WebviewActivity extends AppCompatActivity {
             setResult(RESULT_OK, intent);
             finish();
         });
+
+        WebView.setWebContentsDebuggingEnabled(true);
     }
 
+    /**
+     * 向 webview 注入自定义的 js
+     * https://stackoverflow.com/questions/21552912/android-web-view-inject-local-javascript-file-to-remote-webpage
+     */
+    private void injectScriptFile(WebView view, String scriptFile) {
+        InputStream input;
+        try {
+            input = getAssets().open(scriptFile);
+            byte[] buffer = new byte[input.available()];
+            input.read(buffer);
+            input.close();
+
+            // String-ify the script byte-array using BASE64 encoding !!!
+            String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
+            view.loadUrl("javascript:(function() {" +
+                    "var parent = document.getElementsByTagName('head').item(0);" +
+                    "var script = document.createElement('script');" +
+                    "script.type = 'text/javascript';" +
+                    // Tell the browser to BASE64-decode the string into your script !!!
+                    "script.innerHTML = window.atob('" + encoded + "');" +
+                    "parent.appendChild(script)" +
+                    "})()");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 填入密码进行登录
+     */
+    private void login() {
+        webview.loadUrl("javascript:myAutoLogin(\"" + password + "\")");
+    }
+
+    /**
+     * 开始下载
+     */
     private void install() {
-        webview.loadUrl("javascript:FIR.install()");
+        webview.loadUrl("javascript:myAutoInstall()");
     }
 
     @Override
