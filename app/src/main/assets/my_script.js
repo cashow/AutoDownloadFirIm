@@ -1,27 +1,21 @@
 var isInstall = false;
-var refreshIntervalId;
+var intervalId;
+var mPassword = "";
 
-function myAutoLogin(password) {
-  setTimeout(mAutoLogin(password), 500);
-}
-
-function mAutoLogin(password) {
-  $("#passwdField").val(password);
-  FIR.confirmPasswd();
-}
-
-function myAutoInstall() {
-  setTimeout(FIR.install(), 500);
-}
-
-function myAutoLoginAndInstall(password) {
+function myAutoLoginAndInstall() {
+    // 如果存在密码框，填入密码并登录
     if ($("#passwdField").length) {
-        mAutoLogin(password)
+        // 填入密码
+        $("#passwdField").val(mPassword);
+        // 登录
+        FIR.confirmPasswd();
         return
     }
+    // 如果存在下载按钮，开始下载
     if ($("#actions").length) {
         if (!isInstall) {
             isInstall = true;
+            // 开始下载
             FIR.install();
             clearInterval(refreshIntervalId);
         }
@@ -29,5 +23,6 @@ function myAutoLoginAndInstall(password) {
 }
 
 function mAutoLoginAndInstall(password) {
-    refreshIntervalId = setInterval(myAutoLoginAndInstall(password), 1000);
+    mPassword = password;
+    intervalId = setInterval(myAutoLoginAndInstall, 1000);
 }

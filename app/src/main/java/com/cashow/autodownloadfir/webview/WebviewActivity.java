@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
@@ -167,7 +166,7 @@ public class WebviewActivity extends AppCompatActivity {
      * 开始下载
      */
     private void install() {
-        webview.loadUrl("javascript:myAutoInstall()");
+        webview.loadUrl("javascript:mAutoLoginAndInstall(\"\")");
     }
 
     @Override
