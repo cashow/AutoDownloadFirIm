@@ -24,5 +24,5 @@ dependencies {
         item -> compile item
     }
 
-    annotationProcessor rootProject.ext.dependencies["butterknife-compiler"]
+    annotationProcessor "com.jakewharton:butterknife-compiler:8.8.1"
 }
