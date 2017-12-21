@@ -23,7 +23,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.97" />
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/layout_info_list"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -33,26 +33,25 @@
         android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/checkbox_auto_download"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.23000002">
+        app:layout_constraintTop_toTopOf="parent">
 
-    </LinearLayout>
+    </android.support.v7.widget.RecyclerView>
 
     <Button
         android:id="@+id/button_new_link"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/round_button"
         android:gravity="center"
         android:text="+"
         android:textColor="#fff"
         android:textSize="22sp"
-        app:layout_constraintStart_toStartOf="@+id/layout_info_list"
-        app:layout_constraintTop_toBottomOf="@+id/layout_info_list" />
+        app:layout_constraintBottom_toTopOf="@+id/checkbox_auto_download"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <CheckBox
         android:id="@+id/checkbox_auto_download"

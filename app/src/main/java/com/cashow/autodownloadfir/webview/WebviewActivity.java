@@ -160,7 +160,7 @@ public class WebviewActivity extends AppCompatActivity {
      * 填入密码进行登录
      */
     private void login() {
-        webview.loadUrl("javascript:myAutoLogin(\"" + password + "\")");
+        webview.loadUrl("javascript:mAutoLoginAndInstall(\"" + password + "\")");
     }
 
     /**

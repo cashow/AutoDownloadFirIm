@@ -2,15 +2,11 @@ package com.cashow.autodownloadfir.main;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.CheckBox;
-import android.widget.EditText;
 
 import com.cashow.autodownloadfir.R;
 import com.cashow.autodownloadfir.main.model.FirInfo;
@@ -23,16 +19,13 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements MainContact.View {
     @BindView(R.id.layout_info_list)
-    ViewGroup layoutInfoList;
+    RecyclerView recyclerView;
     @BindView(R.id.checkbox_auto_download)
     CheckBox checkboxAutoDownload;
 
-    /**
-     * 目前聚焦的 view
-     */
-    private View currentInfoView;
-
     private MainPresenter presenter;
+
+    private MainAdapter mainAdapter;
 
     private Context context;
 
@@ -45,7 +38,16 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
         context = getApplicationContext();
         presenter = new MainPresenter(context, this);
 
+        initRecyclerView();
         restoreInfoList();
+    }
+
+    private void initRecyclerView() {
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        mainAdapter = new MainAdapter(context);
+        recyclerView.setAdapter(mainAdapter);
     }
 
     /**
@@ -61,57 +63,14 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
      * 恢复之前保存的链接
      */
     private void restoreInfoList() {
-        layoutInfoList.removeAllViews();
         FirInfoList firInfoList = presenter.getSavedInfoList();
-        if (firInfoList == null || firInfoList.firInfoList.size() == 0) {
-            layoutInfoList.addView(getFirInfoView(new FirInfo("", true, "")));
-        } else {
-            for (FirInfo firInfo : firInfoList.firInfoList) {
-                layoutInfoList.addView(getFirInfoView(firInfo));
-            }
-        }
+        mainAdapter.setFirInfoList(firInfoList);
         checkboxAutoDownload.setChecked(firInfoList.isAutoDownload);
-        layoutInfoList.post(() -> {
+        recyclerView.post(() -> {
             if (firInfoList.isAutoDownload) {
                 startWebviewActivity();
             }
         });
-    }
-
-    /**
-     * 将 FirInfo 转成 View
-     */
-    private View getFirInfoView(FirInfo firInfo) {
-        View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.layout_fir_info, layoutInfoList, false);
-        EditText edittextName = view.findViewById(R.id.edittext_name);
-        EditText edittextPassword = view.findViewById(R.id.edittext_password);
-        View imageDelete = view.findViewById(R.id.image_delete);
-
-        edittextName.setText(firInfo.name);
-        edittextName.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-        edittextName.setOnFocusChangeListener((v, hasFocus) -> {
-            view.setSelected(hasFocus);
-            if (hasFocus) {
-                currentInfoView = view;
-            }
-        });
-
-        edittextPassword.setText(firInfo.password);
-        edittextPassword.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-        edittextPassword.setOnFocusChangeListener((v, hasFocus) -> {
-            view.setSelected(hasFocus);
-            if (hasFocus) {
-                currentInfoView = view;
-            }
-        });
-
-        view.setOnClickListener(v -> edittextName.requestFocus());
-        imageDelete.setOnClickListener(v -> layoutInfoList.removeView(view));
-        if (firInfo.isFocused) {
-            view.setSelected(true);
-            edittextName.post(() -> edittextName.requestFocus());
-        }
-        return view;
     }
 
     @OnClick(R.id.button)
@@ -122,21 +81,11 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
     @OnClick(R.id.button_new_link)
     void onNewLinkClick() {
         FirInfo firInfo = new FirInfo("", true, "");
-        layoutInfoList.addView(getFirInfoView(firInfo));
+        mainAdapter.addFirInfo(firInfo);
     }
 
     private FirInfoList getCurrentInfoList() {
-        FirInfoList firInfoList = new FirInfoList();
-        for (int i = 0; i < layoutInfoList.getChildCount(); i++) {
-            View view = layoutInfoList.getChildAt(i);
-            EditText edittextName = view.findViewById(R.id.edittext_name);
-            EditText edittextPassword = view.findViewById(R.id.edittext_password);
-            String info = edittextName.getEditableText().toString();
-            String password = edittextPassword.getEditableText().toString();
-            if (!TextUtils.isEmpty(info)) {
-                firInfoList.firInfoList.add(new FirInfo(info, (currentInfoView == view), password));
-            }
-        }
+        FirInfoList firInfoList = mainAdapter.getFirInfoList();
         firInfoList.isAutoDownload = checkboxAutoDownload.isChecked();
         return firInfoList;
     }
@@ -145,12 +94,9 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
      * 打开 webview 页面
      */
     private void startWebviewActivity() {
-        EditText editTextName = currentInfoView.findViewById(R.id.edittext_name);
-        EditText editTextPassword = currentInfoView.findViewById(R.id.edittext_password);
-
         Intent intent = new Intent(this, WebviewActivity.class);
-        intent.putExtra("url", "https://fir.im/" + editTextName.getEditableText().toString());
-        intent.putExtra("password", editTextPassword.getEditableText().toString());
+        intent.putExtra("url", "https://fir.im/" + mainAdapter.getCurrentFirInfo().name);
+        intent.putExtra("password", mainAdapter.getCurrentFirInfo().password);
         startActivityForResult(intent, 0);
     }
 

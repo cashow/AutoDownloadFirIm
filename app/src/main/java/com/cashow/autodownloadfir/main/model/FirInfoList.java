@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FirInfoList {
-    public List<FirInfo> firInfoList;
+    public List<FirInfo> infoList;
     public boolean isAutoDownload;
 
     public FirInfoList() {
-        firInfoList = new ArrayList<>();
+        infoList = new ArrayList<>();
+        infoList.add(new FirInfo("", true, ""));
     }
 }
