@@ -1,4 +1,5 @@
 var isInstall = false;
+var refreshIntervalId;
 
 function myAutoLogin(password) {
   setTimeout(mAutoLogin(password), 500);
@@ -22,10 +23,11 @@ function myAutoLoginAndInstall(password) {
         if (!isInstall) {
             isInstall = true;
             FIR.install();
+            clearInterval(refreshIntervalId);
         }
     }
 }
 
 function mAutoLoginAndInstall(password) {
-    setInterval(myAutoLoginAndInstall(password), 1000);
+    refreshIntervalId = setInterval(myAutoLoginAndInstall(password), 1000);
 }
