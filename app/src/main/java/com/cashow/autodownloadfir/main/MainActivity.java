@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements MainContact.View 
 
     @OnClick(R.id.button_new_link)
     void onNewLinkClick() {
-        FirInfo firInfo = new FirInfo("", true, "");
+        FirInfo firInfo = new FirInfo("", "");
         mainAdapter.addFirInfo(firInfo);
     }
 

@@ -6,9 +6,10 @@ import java.util.List;
 public class FirInfoList {
     public List<FirInfo> infoList;
     public boolean isAutoDownload;
+    public int focusedPosition;
 
     public FirInfoList() {
         infoList = new ArrayList<>();
-        infoList.add(new FirInfo("", true, ""));
+        infoList.add(new FirInfo("", ""));
     }
 }

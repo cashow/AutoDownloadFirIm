@@ -22,8 +22,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     private Context context;
 
-    private int currentFocusedPosition;
-
     public MainAdapter(Context context) {
         this.context = context;
     }
@@ -35,6 +33,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     public void addFirInfo(FirInfo firInfo) {
         firInfoList.infoList.add(firInfo);
+        firInfoList.focusedPosition = firInfoList.infoList.size() - 1;
         notifyDataSetChanged();
     }
 
@@ -42,21 +41,43 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     public MainAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.layout_fir_info, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
+        viewHolder.edittextName.getBackground().mutate().setColorFilter(context.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+        viewHolder.edittextPassword.getBackground().mutate().setColorFilter(context.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(MainAdapter.ViewHolder holder, int position) {
-        FirInfo firInfo = firInfoList.infoList.get(position);
+        int holderPosition = holder.getAdapterPosition();
+        FirInfo firInfo = firInfoList.infoList.get(holderPosition);
+
+        setEdittextName(holder, firInfo);
+        setEdittextPassword(holder, firInfo);
+
+        holder.itemView.setOnClickListener(v -> holder.edittextName.requestFocus());
+        holder.imageDelete.setOnClickListener(v -> {
+            firInfoList.infoList.remove(firInfo);
+            notifyDataSetChanged();
+        });
+        if (firInfoList.focusedPosition == holderPosition) {
+            holder.itemView.setSelected(true);
+            holder.edittextName.post(() -> holder.edittextName.requestFocus());
+        }
+    }
+
+    private void setEdittextName(MainAdapter.ViewHolder holder, FirInfo firInfo) {
+        if (holder.edittextName.getTag() != null) {
+            TextWatcher oriTextWatcher = (TextWatcher) holder.edittextName.getTag();
+            holder.edittextName.removeTextChangedListener(oriTextWatcher);
+        }
         holder.edittextName.setText(firInfo.name);
-        holder.edittextName.getBackground().mutate().setColorFilter(context.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
         holder.edittextName.setOnFocusChangeListener((v, hasFocus) -> {
             holder.itemView.setSelected(hasFocus);
             if (hasFocus) {
-                currentFocusedPosition = position;
+                firInfoList.focusedPosition = holder.getAdapterPosition();
             }
         });
-        holder.edittextName.addTextChangedListener(new TextWatcher() {
+        TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -71,40 +92,41 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
             public void afterTextChanged(Editable s) {
                 firInfo.name = s.toString();
             }
-        });
+        };
+        holder.edittextName.addTextChangedListener(textWatcher);
+        holder.edittextName.setTag(textWatcher);
+    }
 
+    private void setEdittextPassword(MainAdapter.ViewHolder holder, FirInfo firInfo) {
+        if (holder.edittextPassword.getTag() != null) {
+            TextWatcher oriTextWatcher = (TextWatcher) holder.edittextPassword.getTag();
+            holder.edittextPassword.removeTextChangedListener(oriTextWatcher);
+        }
         holder.edittextPassword.setText(firInfo.password);
-        holder.edittextPassword.getBackground().mutate().setColorFilter(context.getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
         holder.edittextPassword.setOnFocusChangeListener((v, hasFocus) -> {
             holder.itemView.setSelected(hasFocus);
             if (hasFocus) {
-                currentFocusedPosition = position;
+                firInfoList.focusedPosition = holder.getAdapterPosition();
             }
         });
-        holder.edittextPassword.addTextChangedListener(new TextWatcher() {
+        TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 firInfo.password = s.toString();
             }
-        });
-
-        holder.itemView.setOnClickListener(v -> holder.edittextName.requestFocus());
-        holder.imageDelete.setOnClickListener(v -> {
-            firInfoList.infoList.remove(firInfo);
-            notifyDataSetChanged();
-        });
-        if (firInfo.isFocused) {
-            holder.itemView.setSelected(true);
-            holder.edittextName.post(() -> holder.edittextName.requestFocus());
-        }
+        };
+        holder.edittextPassword.addTextChangedListener(textWatcher);
+        holder.edittextPassword.setTag(textWatcher);
     }
 
     public FirInfoList getFirInfoList() {
@@ -112,10 +134,10 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     }
 
     public FirInfo getCurrentFirInfo() {
-        if (currentFocusedPosition < 0 || currentFocusedPosition >= firInfoList.infoList.size()) {
-            return new FirInfo("", false, "");
+        if (firInfoList.focusedPosition < 0 || firInfoList.focusedPosition >= firInfoList.infoList.size()) {
+            return new FirInfo("", "");
         }
-        return firInfoList.infoList.get(currentFocusedPosition);
+        return firInfoList.infoList.get(firInfoList.focusedPosition);
     }
 
     @Override
