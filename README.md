@@ -9,6 +9,14 @@
 5. 调用系统的下载工具下载 apk
 6. apk 下载完成后自动弹出安装框
 
+下载链接：
+
+<http://7sbs06.com1.z0.glb.clouddn.com/auto_download_fir_im.apk>
+
+二维码：
+
+![qrcode](https://github.com/cashow/AutoDownloadFirIm/blob/master/qrcode.png)
+
 示例图如下：
 
 ![demo](https://github.com/cashow/AutoDownloadFirIm/blob/master/demo.gif)
